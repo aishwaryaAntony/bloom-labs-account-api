@@ -1,0 +1,142 @@
+Create Application Using Express:
+==================================
+1. install express globally
+     > npm install -g express-generator
+
+2. create project
+     > express {Name of the project} --no-view
+
+3. install dependencies:
+     > npm install
+
+4. run the app:
+     > npm start
+
+
+Set up Babel Transpiler
+========================
+    1.  npm install --save-dev babel-preset-env
+    2.  npm install --save-dev babel-cli babel-preset-es2015 babel-preset-stage-2 babel-plugin-transform-runtime
+    3.  You have to install Touch CLI, Run below command in CLI(If you don't have touch in your system)
+        > npm install touch-cli -g
+    4.  Create a babelrc file using 
+        > touch .babelrc
+    5.  Include the following code     
+        >   {
+                "presets": [
+                    "es2015",
+                    "stage-2"
+                ],
+                "plugins": [
+                    ["transform-runtime", {
+                        "polyfill": false,
+                        "regenerator": true
+                    }]
+                ]
+
+            }
+    6.  Install rimraf to delete  the dist folder if exist.
+        > npm install --save rimraf
+    7.  Change the "scripts" object in package.json file as below
+        "scripts": {
+            "start": "nodemon ./bin/www --exec babel-node",
+            "build": "rimraf dist/ && babel ./ -d dist --ignore node_modules,.babelrc,package.json,package-lock.json,npm-debug.log --copy-files"
+        }
+    8.  The above build command will delete 'dist' folder if exists. And it will transpile all the es6 js files to es5 and will put it under dist folder.
+        > npm run build
+	Set up Database
+===============
+    1.  http://docs.sequelizejs.com/manual/tutorial/migrations.html
+    2.  > npm install --save sequelize         //To install sequelize
+    3.  > npm install --save sequelize-cli       //To install command line interface for sequelize
+    4.  > cd src
+    5.  > npx sequelize-cli init   //To get the models, migrations, seeders, config folders. If it was already there, then we don't need to execute it.
+    6.  http://docs.sequelizejs.com/manual/tutorial/upgrade-to-v4.html
+    7.  Create .sequelizerc configuration file using the following command
+    8.  > cd ..
+	    > touch .sequelizerc
+    9.  Configure your models, migrations, seeders and config folders path in .sequelizerc file as follows
+    10. const path = require('path');
+        module.exports = {
+            'config': path.resolve('./src/config', 'config.json'),
+            'models-path': path.resolve('./src', 'models'),
+            'seeders-path': path.resolve('./src', 'seeders'),
+            'migrations-path': path.resolve('./src', 'migrations')
+        }
+    11. In config.json file, we need to add '"operatorsAliases": false' in order to remove the error - "sequelize deprecated String based operators are now deprecated. Please use Symbol based operators for better security"
+
+Alter config.json file
+=========================
+    1.  Need to alter the config.json file under ./src/config folder like below
+    2.  {
+            "development": {
+                "username": "root",
+                "password": "password",
+                "database": "saguaro_account_dev",
+                "host": "127.0.0.1",
+                "dialect": "postgres",
+                "logging": false
+            },
+            "test": {
+                "username": "root",
+                "password": "password",
+                "database": "saguaro_account_test",
+                "host": "127.0.0.1",
+                "dialect": "postgres",
+                "logging": false
+            },
+            "production": {
+                "username": "root",
+                "password": "password",
+                "database": "saguaro_account_prod",
+                "host": "127.0.0.1",
+                "dialect": "postgres",
+                "logging": false
+            }
+        }
+Execute command to add model files
+====================================
+1. Lab Table:
+    npx sequelize-cli model:generate --name Lab --attributes lab_token:UUID,code:string,name:string,logo:string,description:string,address_line_1:string,address_line_2:string,phone_number:string,city:string,state:string,country:string,zipcode:string,status:string
+2. User Table:
+    npx sequelize-cli model:generate --name User --attributes country_code:string,phone_number:string,email:string,verification_code:string,password:string,hashed_password:string,salt:string,internal_user:boolean,lab_code:string,status:string 
+3. Account Table:
+    npx sequelize-cli model:generate --name Account --attributes lab_id:integer,hashed_user_id:string, account_token:UUID, name:string, primary_member_id:integer, last_login:Date, status:string
+4. Role Table:
+    npx sequelize-cli model:generate --name Role --attributes id:string,code:string,name:string,status:string
+5. Account Role:
+    npx sequelize-cli model:generate --name AccountRole --attributes account_id:integer,role_id:integer,is_default:boolean,permission:json,status:string
+6. CustomPermission Table:
+    npx sequelize-cli model:generate --name CustomPermission --attributes permission:json,account_id:integer
+7. Member Table:
+    npx sequelize-cli model:generate --name Member --attributes account_id:integer,member_token:uuid,first_name:string,middle_name:string,last_name:string,country_code:string,phone_number:string,is_primary_member:boolean,gender:string,birth_date:string,race:string,ethnicity:string,driver_license_number:string,passport_number:string,ssn:string,address_line1:string,address_line2:string,city:string,state:string,zipcode:string,country:string,qr_code:string,status:string
+8. MemberInsurance Table:
+    sequelize-cli model:generate --name MemberInsurance --attributes member_id:string,insurance_provider:string,policy_number:string,policy_group_number:string,provider_phone_number:string,front_insurance_card_image:string,back_insurance_card_image:string,street_address_line1:string,street_address_line2:string,city:string,state:string,zipcode:string,expiry_date:date,status:string
+9. Attachment table:
+    npx sequelize-cli model:generate --name Attachment --attributes member_id:string,storage_key:string,file_type:string,attachment_type:string,status:string
+10. LabLocation table:
+    npx sequelize-cli model:generate --name LabLocation --attributes lab_token:string,name:string,lab_name:string,clia:string,street_address_line1:string,street_address_line2:string,city:string,state:string,country:string,zipcode:string,phone_number:string,timezone:string,ordering_facility:string,status:string
+11. AccountLocation table:
+    npx sequelize-cli model:generate --name AccountLocation --attributes lab_location_id:integer,account_id:integer,is_default:boolean,status:string
+12. ScreenPermission table:
+    npx sequelize-cli model:generate --name ScreenPermission --attributes code:string,name:string,view:boolean,add:boolean,edit:boolean,delete:boolean,status:string
+13. UserAppointments Table:
+    npx sequelize-cli model:generate --name UserAppointment --attributes first_name:integer,last_name:string,phone_number:string,country_code:string,email:string,location_id:integer,location_name:string,test_type_id:integer,test_type_name:string,test_type_description:text,location_test_type_id:integer,appointment_date:date,appointment_time:date,acuity_appointment_id:string,status:string  
+14. SubmittedTestForm table:
+    npx sequelize-cli model:generate --name SubmittedTestForm --attributes member_token:string,form_detail:jsonb,submitted_date:dateonly,submitted_at:date,status:string
+15. Blogs table:
+    npx sequelize-cli model:generate --name Blog --attributes title:text,description:text,image_url:string,created_by:integer,meta_description:text,slug:text,status:string
+
+Alter table cmd
+=======================
+npx sequelize migration:create --name [migration file name]
+
+To run the application
+====================================
+    1.  > npx sequelize-cli db:create
+    2.  > npx sequelize-cli db:migrate
+    3.  > npm run build 
+    4.  > node ./dist/data/loadData.js master ./dist/data/SaguaroData.xlsx 
+    5.  > npm start 
+
+    
